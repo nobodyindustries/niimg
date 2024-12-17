@@ -1,6 +1,6 @@
 # NIIMG
 
-NIIMG is an image processing library built from basic principles. It leverages the `stb_image` and `stb_image_write` libraries for image loading and saving, and custom code for the rest of the functionality.
+NIIMG is an image processing library built from basic principles. It leverages the `stb_image` and `stb_image_write` libraries for image loading and saving, and custom code for the rest of the functionality. It is used in all Nobody Industrie's microtools for image manipulation.
 
 ## Contributing
 
