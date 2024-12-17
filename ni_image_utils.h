@@ -48,8 +48,8 @@
  *
  * returns true if X in [0, W) and Y in [0, H)
  */
-#define PX_VALID(X, Y, W, H)                                                   \
-  ((X) >= 0) && ((X) < (W)) && ((Y) >= 0) && ((Y) < (H))
+#define PX_VALID(X, Y, W, H) \
+	((X) >= 0) && ((X) < (W)) && ((Y) >= 0) && ((Y) < (H))
 
 /**
  * Creates a new, empty image.
@@ -81,14 +81,18 @@ double *ni_data_create(int w, int h, int n_channels);
 // = IMPLEMENTATION =
 #ifdef NI_IMAGE_UTILS_IMPLEMENTATION
 
-stbi_uc *ni_image_create(int w, int h, int n_channels) {
-  const size_t sz = (w * h * n_channels) * sizeof(stbi_uc);
-  return STBI_MALLOC(sz);
+stbi_uc *
+ni_image_create(int w, int h, int n_channels)
+{
+	const size_t sz = (w * h * n_channels) * sizeof(stbi_uc);
+	return STBI_MALLOC(sz);
 }
 
-double *ni_data_create(int w, int h, int n_channels) {
-  const size_t sz = (w * h * n_channels) * sizeof(double);
-  return STBI_MALLOC(sz);
+double *
+ni_data_create(int w, int h, int n_channels)
+{
+	const size_t sz = (w * h * n_channels) * sizeof(double);
+	return STBI_MALLOC(sz);
 }
 
 #endif // NI_IMAGE_UTILS_IMPLEMENTATION

@@ -3,8 +3,10 @@
 
 #include "math.h"
 
+#ifndef NI_INCLUDE_IMAGE_UTILS
 #define NI_IMAGE_UTILS_IMPLEMENTATION
 #include "ni_image_utils.h"
+#endif
 
 // = DECLARATION =
 
@@ -12,9 +14,9 @@
  * Types of algorithms that can be used to convert to grayscale
  */
 typedef enum __NI_IMAGE_GRAYSCALE_STD {
-  NI_ITU_BT_601, // ITU BT.601
-  NI_ITU_BT_709, // ITU BT.709
-  NI_SMPTE_240M, // SMPTE 240M
+	NI_ITU_BT_601, // ITU BT.601
+	NI_ITU_BT_709, // ITU BT.709
+	NI_SMPTE_240M, // SMPTE 240M
 } NI_IMAGE_GRAYSCALE_STD;
 
 /**
@@ -28,9 +30,7 @@ typedef enum __NI_IMAGE_GRAYSCALE_STD {
  * Note: n_channels needs to be three for now, as it only supports
  * RGB images, but maybe in the future there's more options.
  */
-stbi_uc *ni_image_grayscale_convert(const stbi_uc *img_data, int w, int h,
-                                    int n_channels,
-                                    NI_IMAGE_GRAYSCALE_STD type);
+stbi_uc *ni_image_grayscale_convert(const stbi_uc *img_data, int w, int h, int n_channels, NI_IMAGE_GRAYSCALE_STD type);
 
 /**
  * Creates a representation of a grayscale image (1 channel, 1 byte per
@@ -94,12 +94,13 @@ static inline stbi_uc gray_unnormalize(double val);
  *
  * Returns the luma value for the rgb tuple
  */
-static inline stbi_uc __ni_image_grayscale_itu_bt_601(stbi_uc r, stbi_uc g,
-                                                      stbi_uc b) {
-  // LUMA = 0.299 R + 0.587 G + 0.114 B
-  double l =
-      (0.299 * ((double)r)) + (0.587 * ((double)g)) + (0.114 * ((double)b));
-  return (stbi_uc)round(l);
+static inline stbi_uc
+__ni_image_grayscale_itu_bt_601(stbi_uc r, stbi_uc g, stbi_uc b)
+{
+	// LUMA = 0.299 R + 0.587 G + 0.114 B
+	double l =
+		(0.299 * ((double)r)) + (0.587 * ((double)g)) + (0.114 * ((double)b));
+	return (stbi_uc)round(l);
 }
 
 /**
@@ -113,12 +114,13 @@ static inline stbi_uc __ni_image_grayscale_itu_bt_601(stbi_uc r, stbi_uc g,
  *
  * Returns the luma value for the rgb tuple
  */
-static inline stbi_uc __ni_image_grayscale_itu_bt_709(stbi_uc r, stbi_uc g,
-                                                      stbi_uc b) {
-  // LUMA = 0.2126 R + 0.7152 G + 0.0722 B
-  double l =
-      (0.2126 * ((double)r)) + (0.7152 * ((double)g)) + (0.0722 * ((double)b));
-  return (stbi_uc)round(l);
+static inline stbi_uc
+__ni_image_grayscale_itu_bt_709(stbi_uc r, stbi_uc g, stbi_uc b)
+{
+	// LUMA = 0.2126 R + 0.7152 G + 0.0722 B
+	double l =
+		(0.2126 * ((double)r)) + (0.7152 * ((double)g)) + (0.0722 * ((double)b));
+	return (stbi_uc)round(l);
 }
 
 /**
@@ -132,88 +134,97 @@ static inline stbi_uc __ni_image_grayscale_itu_bt_709(stbi_uc r, stbi_uc g,
  *
  * Returns the luma value for the rgb tuple
  */
-static inline stbi_uc __ni_image_grayscale_smpte_240m(stbi_uc r, stbi_uc g,
-                                                      stbi_uc b) {
-  // LUMA = 0.212 R + 0.701 G + 0.087 B
-  double l =
-      (0.212 * ((double)r)) + (0.701 * ((double)g)) + (0.087 * ((double)b));
-  return (stbi_uc)round(l);
+static inline stbi_uc
+__ni_image_grayscale_smpte_240m(stbi_uc r, stbi_uc g, stbi_uc b)
+{
+	// LUMA = 0.212 R + 0.701 G + 0.087 B
+	double l =
+		(0.212 * ((double)r)) + (0.701 * ((double)g)) + (0.087 * ((double)b));
+	return (stbi_uc)round(l);
 }
 
-static inline double gray_normalize(stbi_uc val) {
-  return ((double)val) / ((double)UCHAR_MAX);
+static inline double
+gray_normalize(stbi_uc val)
+{
+	return ((double)val) / ((double)UCHAR_MAX);
 }
 
-static inline stbi_uc gray_unnormalize(double val) {
-  return (stbi_uc)round(val * UCHAR_MAX);
+static inline stbi_uc
+gray_unnormalize(double val)
+{
+	return (stbi_uc)round(val * UCHAR_MAX);
 }
 
-stbi_uc *ni_image_grayscale_convert(const stbi_uc *img_data, int w, int h,
-                                    int n_channels,
-                                    NI_IMAGE_GRAYSCALE_STD type) {
-  assert(n_channels == 3);
-  stbi_uc *ret_img =
-      ni_image_create(w, h, 1); // This image is grayscale -> 1 channel
+stbi_uc *
+ni_image_grayscale_convert(const stbi_uc *img_data, int w, int h, int n_channels, NI_IMAGE_GRAYSCALE_STD type)
+{
+	assert(n_channels == 3);
+	stbi_uc *ret_img =
+		ni_image_create(w, h, 1); // This image is grayscale -> 1 channel
 
-  int idx, n_idx;
-  stbi_uc r, g, b, l;
+	int idx, n_idx;
+	stbi_uc r, g, b, l;
 
-  BEGIN_FOREACH_PIXEL(w, h)
-  idx = PX_IDX(__x, __y, w, n_channels);
-  r = img_data[idx];
-  g = img_data[idx + 1];
-  b = img_data[idx + 2];
-  switch (type) {
-  case (NI_ITU_BT_601):
-    l = __ni_image_grayscale_itu_bt_601(r, g, b);
-    break;
-  case (NI_ITU_BT_709):
-    l = __ni_image_grayscale_itu_bt_709(r, g, b);
-    break;
-  case (NI_SMPTE_240M):
-    l = __ni_image_grayscale_smpte_240m(r, g, b);
-    break;
-  default:
-    l = 0; // Should never reach this default
-    break;
-  }
-  n_idx = PX_IDX(__x, __y, w, 1);
-  ret_img[n_idx] = l;
-  END_FOREACH_PIXEL
+	BEGIN_FOREACH_PIXEL(w, h)
+	idx = PX_IDX(__x, __y, w, n_channels);
+	r = img_data[idx];
+	g = img_data[idx + 1];
+	b = img_data[idx + 2];
+	switch(type) {
+	case(NI_ITU_BT_601):
+		l = __ni_image_grayscale_itu_bt_601(r, g, b);
+		break;
+	case(NI_ITU_BT_709):
+		l = __ni_image_grayscale_itu_bt_709(r, g, b);
+		break;
+	case(NI_SMPTE_240M):
+		l = __ni_image_grayscale_smpte_240m(r, g, b);
+		break;
+	default:
+		l = 0; // Should never reach this default
+		break;
+	}
+	n_idx = PX_IDX(__x, __y, w, 1);
+	ret_img[n_idx] = l;
+	END_FOREACH_PIXEL
 
-  return ret_img;
+	return ret_img;
 }
 
-double *ni_grayscale_fp_convert(const stbi_uc *img_data, int w, int h) {
-  double *data = ni_data_create(w, h, 1);
+double *
+ni_grayscale_fp_convert(const stbi_uc *img_data, int w, int h)
+{
+	double *data = ni_data_create(w, h, 1);
 
-  int idx;
-  stbi_uc value;
-  double new_value;
-  BEGIN_FOREACH_PIXEL(w, h)
-  idx = PX_IDX(__x, __y, w, 1);
-  value = img_data[idx];
-  new_value = gray_normalize(value);
-  data[idx] = new_value;
-  END_FOREACH_PIXEL
+	int idx;
+	stbi_uc value;
+	double new_value;
+	BEGIN_FOREACH_PIXEL(w, h)
+	idx = PX_IDX(__x, __y, w, 1);
+	value = img_data[idx];
+	new_value = gray_normalize(value);
+	data[idx] = new_value;
+	END_FOREACH_PIXEL
 
-  return data;
+	return data;
 }
 
-stbi_uc *ni_fp_grayscale_convert(const double *img_data, int w, int h) {
-  stbi_uc *img = ni_image_create(w, h, 1);
+stbi_uc *
+ni_fp_grayscale_convert(const double *img_data, int w, int h)
+{
+	stbi_uc *img = ni_image_create(w, h, 1);
 
-  int idx;
-  double value;
-  stbi_uc new_value;
-  BEGIN_FOREACH_PIXEL(w, h)
-  idx = PX_IDX(__x, __y, w, 1);
-  value = img_data[idx];
-  new_value = gray_unnormalize(value);
-  img[idx] = new_value;
-  END_FOREACH_PIXEL
+	int idx;
+	double value;
+	stbi_uc new_value;
+	BEGIN_FOREACH_PIXEL(w, h)
+	idx = PX_IDX(__x, __y, w, 1);
+	value = img_data[idx];
+	new_value = gray_unnormalize(value);
+	img[idx] = new_value;
+	END_FOREACH_PIXEL
 
-  return img;
+	return img;
 }
 
 #endif // NI_GRAYSCALE_IMPLEMENTATION
